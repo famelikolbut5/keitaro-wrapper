@@ -1,0 +1,25 @@
+{% set tracks = active|selectattr('share', 'gt', 0)|list %}
+{% if tracks %}
+{% set total = tracks|sum(attribute='share') %}
+<figure class="share-mosaic">
+  <figcaption>Распределение трафика <strong>{{ total }}%</strong></figcaption>
+  <svg class="ink-brush" viewBox="0 0 968 70" preserveAspectRatio="none" aria-hidden="true">
+    <defs>
+      <mask id="brush-{{ stream.id }}" maskUnits="userSpaceOnUse" x="0" y="0" width="968" height="70">
+        {% include 'brush_texture.html' %}
+      </mask>
+      <linearGradient id="shares-{{ stream.id }}" gradientUnits="userSpaceOnUse" x1="7" x2="961">
+        {% set edge = namespace(share=0) %}
+        {% for offer in tracks %}
+          {% set width = offer.share / total %}
+          {% set blend = [0.009, width / 5]|min %}
+          <stop offset="{{ 0 if loop.first else edge.share + blend }}" class="ink-{{ offer.offer_id % 8 }}"/>
+          {% set edge.share = edge.share + width %}
+          <stop offset="{{ 1 if loop.last else edge.share - blend }}" class="ink-{{ offer.offer_id % 8 }}"/>
+        {% endfor %}
+      </linearGradient>
+    </defs>
+    <rect width="968" height="70" fill="url(#shares-{{ stream.id }})" mask="url(#brush-{{ stream.id }})"/>
+  </svg>
+</figure>
+{% endif %}

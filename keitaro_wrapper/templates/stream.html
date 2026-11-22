@@ -1,0 +1,89 @@
+{% from 'icons.html' import icon %}
+{% from 'offer_search.html' import offer_search %}
+{% macro command(action, id, label, kind='quiet') %}
+<button type="submit" class="button small {{ kind }}" name="action" value="{{ action }}" aria-label="{{ label }} · #{{ id }}">{% if kind == 'sealed' %}{{ icon('pin') }}{% endif %}{{ label }}</button>
+{% endmacro %}
+{% set current = stream.draft if stream.draft is not none else stream.published %}
+{% set live = current|rejectattr('state', 'equalto', 'removed')|list %}
+{% set archive = current|selectattr('state', 'equalto', 'removed')|list %}
+{% set active = live|selectattr('state', 'equalto', 'active')|list %}
+{% set editable = stream.schema_ == 'landings' and not stream.conflict %}
+<section class="card stream{{ ' draft' if stream.draft is not none else '' }}" id="stream-{{ stream.id }}" hx-sync="this:drop">
+  <header class="stream-header">
+    <div class="stream-title"><span class="stream-symbol">{{ icon('external' if stream.schema_ == 'redirect' else 'branch') }}</span><div><h3>{{ stream.name }}</h3><p>Поток #{{ stream.id }}</p></div></div>
+    {% if not stream.conflict %}
+      {% if stream.draft is not none %}<span class="badge pending">Черновик</span>
+      {% else %}<span class="badge synced">Синхронизировано</span>{% endif %}
+    {% endif %}
+  </header>
+  {% if message %}{% set tone = 'ok' %}{% include 'notice.html' %}{% endif %}
+  {% if stream.conflict %}
+  <div class="notice error" role="alert">Поток изменился в Keitaro. Отмените черновик, чтобы редактировать обновлённый список.</div>
+  {% endif %}
+  {% if stream.schema_ == "landings" %}
+    {% include 'mosaic.html' %}
+    {% if editable %}
+    <div class="table-toolbar">
+      <form class="add-offer" method="post" action="/ui/streams/{{ stream.id }}/edit" hx-post="/ui/streams/{{ stream.id }}/edit" hx-target="#stream-{{ stream.id }}" hx-swap="outerHTML" hx-disabled-elt="find button" hx-disinherit="hx-disabled-elt">
+        <input type="hidden" name="revision" value="{{ stream.revision }}"><input type="hidden" name="action" value="add">
+        {{ offer_search('offer-' ~ stream.id, 'offers-' ~ stream.id, 'Поиск по названию или ID', offer_choices|default(none), 'Название или ID оффера') }}
+        <button class="button" type="submit" disabled>Добавить</button>
+      </form>
+    </div>
+    {% endif %}
+    {% if live %}
+    <div class="table-scroll" tabindex="0" aria-label="Таблица офферов">
+      <table>
+        <thead><tr><th scope="col">Оффер</th><th scope="col" class="share-cell">Доля трафика</th>{% if editable %}<th scope="col" class="row-actions"><span>Действия</span></th>{% endif %}</tr></thead>
+        <tbody class="offer-rows">
+          {% for row in live %}
+          {% set previous = stream.published|selectattr('offer_id', 'equalto', row.offer_id)|first|default(none) %}
+          <tr>
+            <th scope="row"><span class="offer-name">{% if row.state == 'active' and row.share > 0 %}<i class="offer-ink ink-{{ row.offer_id % 8 }}" aria-hidden="true"></i>{% endif %}{{ names.get(row.offer_id, 'Оффер #' ~ row.offer_id) }}</span><small>#{{ row.offer_id }}{% if row.state == 'disabled' %} · Выключен{% endif %}</small></th>
+            <td class="share-cell">
+              <span class="share">{% if stream.draft is not none and previous and previous.share != row.share %}<s>{{ previous.share }}%</s><i class="share-arrow">{{ icon('arrow') }}</i>{% endif %}<strong>{{ row.share }}%</strong></span>
+            </td>
+            {% if editable %}
+            <td class="row-actions">
+              <form method="post" action="/ui/streams/{{ stream.id }}/edit" hx-post="/ui/streams/{{ stream.id }}/edit" hx-target="#stream-{{ stream.id }}" hx-swap="outerHTML" hx-disabled-elt="find button">
+                <input type="hidden" name="revision" value="{{ stream.revision }}"><input type="hidden" name="offer_id" value="{{ row.offer_id }}">
+                {% if row.state == 'active' and row.share > 0 %}{{ command('unpin' if row.pinned else 'pin', row.offer_id, 'Открепить' if row.pinned else 'Закрепить', 'sealed' if row.pinned else 'quiet') }}{% endif %}
+                {{ command('remove', row.offer_id, 'Убрать', 'danger') }}
+              </form>
+            </td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+    {% if not active %}
+    <p class="no-offers">{% if stream.draft is not none %}После публикации поток останется без активных офферов.{% else %}В потоке нет активных офферов.{% endif %}</p>
+    {% endif %}
+    {% if archive %}
+    <details class="archive"{% if stream.draft is not none %} open{% endif %}>
+      <summary>Архив офферов <span class="badge neutral">{{ archive|length }}</span></summary>
+      {% for row in archive %}
+      <div class="archive-row"><div>{{ names.get(row.offer_id, 'Оффер #' ~ row.offer_id) }} <small>#{{ row.offer_id }} · 0%</small></div>
+        {% if editable %}
+        <form method="post" action="/ui/streams/{{ stream.id }}/edit" hx-post="/ui/streams/{{ stream.id }}/edit" hx-target="#stream-{{ stream.id }}" hx-swap="outerHTML">
+          <input type="hidden" name="revision" value="{{ stream.revision }}"><input type="hidden" name="offer_id" value="{{ row.offer_id }}">{{ command('restore', row.offer_id, 'Вернуть') }}
+        </form>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </details>
+    {% endif %}
+    {% if stream.draft is not none %}
+    <footer class="stream-footer">
+      <div class="publish-actions">
+        <button class="button quiet" hx-post="/ui/streams/{{ stream.id }}/cancel" hx-vals='{"revision":{{ stream.revision }}}' hx-target="#stream-{{ stream.id }}" hx-swap="outerHTML" hx-disabled-elt="this">Отменить</button>
+        {% if not stream.conflict %}
+        <button class="button primary" hx-post="/ui/streams/{{ stream.id }}/publish" hx-vals='{"revision":{{ stream.revision }}}' hx-target="#stream-{{ stream.id }}" hx-swap="outerHTML" hx-disabled-elt="this">Опубликовать</button>
+        {% endif %}
+      </div>
+    </footer>
+    {% endif %}
+  {% endif %}
+</section>

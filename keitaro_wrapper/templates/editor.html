@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% from 'icons.html' import icon %}
+{% block brand %}
+<h1 class="ink-art">
+  <span class="sr-only" lang="en">Keitaro</span>
+  <img class="ink-word light" src="{{ url_for('static', path='keitaro-light.webp') }}" width="456" height="174" alt="" fetchpriority="high">
+  <img class="ink-word dark" src="{{ url_for('static', path='keitaro-dark.webp') }}" width="456" height="174" alt="">
+  <canvas aria-hidden="true" data-ink-field data-html2canvas-ignore></canvas>
+</h1>
+{% endblock %}
+{% block content %}
+<section aria-label="Кампании">
+<div class="campaign-controls">
+  <form class="lookup-bar" method="get" action="/" hx-post="/ui/sync"
+      hx-target="#workspace" hx-disabled-elt="find button">
+    <label for="campaign-id">ID кампании</label>
+    <div class="lookup-controls">
+      <input id="campaign-id" name="campaign_id" type="number" min="1" required value="{{ campaign_id or '' }}">
+      <button class="button" type="submit">Открыть</button>
+    </div>
+  </form>
+  <details class="new-campaign"{% if create_open %} open{% endif %}>
+    <summary class="button primary">{{ icon('plus') }}<span>Новая кампания</span></summary>
+    {% include 'create.html' %}
+  </details>
+</div>
+<div id="feedback" aria-live="polite">{% if message %}{% set tone = 'error' %}{% include 'notice.html' %}{% endif %}</div>
+<div id="workspace" class="workspace" aria-live="polite">
+  {% if view %}{% include 'workspace.html' %}
+  {% elif not campaign_id %}<p class="empty">Введите ID кампании и нажмите «Открыть».</p>{% endif %}
+</div>
+</section>
+{% endblock %}

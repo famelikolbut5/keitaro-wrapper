@@ -1,0 +1,37 @@
+{% from 'offer_search.html' import offer_search %}
+<div class="create-grid">
+  <form class="campaign-form" method="post" action="/ui/campaigns" hx-post="/ui/campaigns" hx-target="#create-feedback" hx-disabled-elt="find button[type='submit']" hx-disinherit="hx-disabled-elt">
+    <section class="form-section" aria-labelledby="campaign-fields">
+      <h2 id="campaign-fields">Основное</h2>
+      <label for="campaign-name">Название кампании</label>
+      <input id="campaign-name" name="name" placeholder="Весенняя кампания" maxlength="100" autocomplete="off" required>
+      <div class="form-grid">
+        <div><label for="country">Код страны</label><input id="country" name="country" placeholder="AU" maxlength="2" pattern="[A-Za-z]{2}" autocomplete="off" spellcheck="false" required></div>
+        <div><label for="initial-offer">Оффер</label>{{ offer_search('initial-offer', 'initial-options', 'Название или ID', offer_choices|default(none)) }}</div>
+      </div>
+    </section>
+    <section class="form-section settings" aria-labelledby="tracker-fields">
+      <h2 id="tracker-fields">Настройки Keitaro</h2>
+      <div id="lookups" hx-get="/ui/lookups" hx-trigger="{{ 'load' if create_open else 'load-settings once' }}" hx-target="this" aria-live="polite">
+        {% include 'lookups.html' %}
+      </div>
+      <button id="lookup-retry" class="button lookup-retry" type="button" hx-get="/ui/lookups" hx-target="#lookups" hidden>Загрузить настройки ещё раз</button>
+    </section>
+    <div id="create-feedback" aria-live="polite"></div>
+    <div class="form-footer"><button class="button primary" type="submit">Создать кампанию</button></div>
+  </form>
+  <aside class="route-card" aria-labelledby="traffic-routes">
+    <h2 id="traffic-routes">Маршруты трафика</h2>
+    <p class="route-origin">Переход по ссылке</p>
+    <svg class="route-branches" viewBox="0 0 320 48" preserveAspectRatio="none" aria-hidden="true">
+      <path class="route-brush route-brush-accent" d="M160 4 C154 14 137 18 119 22 C101 26 87 32 80 44 L82 38 L78 43 C83 32 93 26 111 20 C130 14 147 12 157 5 L160 4Z"/>
+      <path class="route-brush" d="M159 4 C170 13 189 15 207 21 C223 27 235 33 242 44 L237 39 L239 44 C232 36 225 32 216 28 C197 21 175 18 163 10 C160 8 159 6 159 4Z"/>
+      <path class="route-brush route-brush-accent" d="M116 25 C103 29 94 34 88 40 C92 34 102 28 116 25Z"/>
+      <path class="route-brush" d="M215 22 C226 25 234 31 238 36 C232 31 225 27 215 22Z"/>
+    </svg>
+    <div class="routes">
+      <p>Из указанной страны <strong>Google</strong></p>
+      <p>Из других стран <strong>Выбранный оффер</strong></p>
+    </div>
+  </aside>
+</div>

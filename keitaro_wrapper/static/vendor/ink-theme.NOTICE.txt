@@ -1,0 +1,6 @@
+Ink Bleed by Codemure (MIT)
+https://github.com/codemure-official/ink-bleed-theme-changer
+Source revision 40e537e. The theme transition and icon are adapted to the workspace markup.
+html2canvas 1.4.1 (MIT), with subpixel text baseline measurement for theme captures.
+GSAP and MorphSVG under the GSAP Standard No Charge License
+https://gsap.com/standard-license/

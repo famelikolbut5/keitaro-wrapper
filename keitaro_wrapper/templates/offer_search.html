@@ -1,0 +1,5 @@
+{% macro offer_search(id, list_id, hint, offers, label=none) -%}
+  <input id="{{ id }}" name="offer_id" data-offer-list="{{ list_id }}" {% if label %}aria-label="{{ label }}" {% endif %}placeholder="{{ hint }}" autocomplete="off" inputmode="search" maxlength="100" pattern=".*\S.*" required
+    {% if offers is none %}hx-get="/ui/offers" hx-trigger="input changed delay:160ms" hx-swap="innerHTML" hx-target="#{{ list_id }}" hx-sync="this:replace"{% endif %}>
+  <datalist id="{{ list_id }}">{% if offers is not none %}{% include 'options.html' %}{% endif %}</datalist>
+{%- endmacro %}

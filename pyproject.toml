@@ -1,0 +1,41 @@
+[project]
+name = "keitaro-wrapper"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.15,<2",
+    "fastapi>=0.115,<1",
+    "httpx>=0.28,<1",
+    "jinja2>=3.1.6,<4",
+    "pycountry>=24,<27",
+    "pydantic-settings>=2.7,<3",
+    "python-multipart>=0.0.22,<1",
+    "sqlalchemy>=2.0,<2.1",
+    "uvicorn>=0.34,<1",
+]
+
+[project.optional-dependencies]
+dev = ["httpx2>=2,<3", "pytest>=8,<10", "ruff>=0.11,<1"]
+
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["keitaro_wrapper*"]
+
+[tool.setuptools.package-data]
+keitaro_wrapper = ["templates/*.html", "static/*.css", "static/*.js", "static/*.svg", "static/*.webp", "static/vendor/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.mypy]
+plugins = ["pydantic.mypy"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]

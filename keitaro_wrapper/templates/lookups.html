@@ -1,0 +1,12 @@
+<div class="form-grid tracker-options">
+  {% set options = options|default({}) %}
+  {% for name, label, items in [('domain_id', 'Домен', options.domains), ('group_id', 'Группа', options.groups), ('traffic_source_id', 'Источник', options.sources)] %}
+  <div>
+    <label for="{{ name }}">{{ label }}</label>
+    <select name="{{ name }}" id="{{ name }}" required>
+      <option value="" disabled selected>{% if items %}Выбрать{% elif options %}Нет вариантов{% else %}Загрузка…{% endif %}</option>
+      {% for item in items %}<option value="{{ item.id }}">{{ item.name }}</option>{% endfor %}
+    </select>
+  </div>
+  {% endfor %}
+</div>

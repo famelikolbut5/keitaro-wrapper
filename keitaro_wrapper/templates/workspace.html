@@ -1,0 +1,13 @@
+<header class="campaign-summary">
+  <h2 title="{{ view.campaign.name }}">{{ view.campaign.name.removeprefix(prefix) or view.campaign.name }}</h2>
+  {% set total = view.streams|length %}
+  {% if total %}
+  {% set last = total % 10 %}
+  <span class="badge neutral">{{ total }} {% if 11 <= total % 100 <= 14 %}потоков{% elif last == 1 %}поток{% elif 2 <= last <= 4 %}потока{% else %}потоков{% endif %}</span>
+  {% endif %}
+</header>
+{% for stream in view.streams %}
+  {% include "stream.html" %}
+{% else %}
+  <div class="card empty"><h2>У кампании пока нет потоков</h2><p>Создайте поток в Keitaro и загрузите кампанию снова.</p></div>
+{% endfor %}
