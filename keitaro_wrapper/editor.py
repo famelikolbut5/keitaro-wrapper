@@ -74,9 +74,9 @@ def changed_rows(rows: list[OfferRow], edit: Edit) -> list[OfferRow]:
         return normalize([*rows, OfferRow(offer_id=edit.offer_id, share=0)])
 
     row = rows[index]
-    if edit.action == "add":
-        raise AppError(409, "Оффер уже в потоке. Если он в архиве, нажмите «Вернуть».")
-    if edit.action == "restore" and row.state == "removed":
+    if edit.action == "add" and row.state != "removed":
+        raise AppError(409, "Оффер уже в потоке.")
+    if edit.action in ("add", "restore") and row.state == "removed":
         new = row.model_copy(update={"state": "active"})
     elif edit.action == "remove" and row.state in ("active", "disabled"):
         new = row.model_copy(update={"state": "removed", "share": 0, "pinned": False})
@@ -105,7 +105,9 @@ class Editor:
             if row is None:
                 raise AppError(404, "Сначала откройте кампанию по ID.")
             current = row.draft if row.draft is not None else row.published
-            return frozenset(offer.offer_id for offer in read_rows(current))
+            return frozenset(
+                offer.offer_id for offer in read_rows(current) if offer.state != "removed"
+            )
 
     def sync(self, campaign_id: int) -> CampaignView:
         with self.lock:
