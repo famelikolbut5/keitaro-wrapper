@@ -17,6 +17,10 @@ class OfferRow(BaseModel):
 
 def normalize(rows: list[OfferRow]) -> list[OfferRow]:
     active = [row for row in rows if row.state == "active"]
+    if len(active) == 1:
+        return [
+            row.model_copy(update={"share": 100}) if row.state == "active" else row for row in rows
+        ]
     free = [row for row in active if not row.pinned]
     remaining = 100 - sum(row.share for row in active if row.pinned)
 

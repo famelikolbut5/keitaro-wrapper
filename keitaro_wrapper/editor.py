@@ -237,6 +237,11 @@ class Editor:
         schema_changed = row.schema != stream.schema_
         offers_changed = not matches_offers(previous, actual)
         if not (schema_changed or offers_changed or row.name != stream.name):
+            if row.schema == "landings" and row.draft is None:
+                draft = rebalance_draft(previous)
+                if draft is not None:
+                    row.draft = draft
+                    row.revision += 1
             return row
 
         merged = merge_remote(previous, actual)
