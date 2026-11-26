@@ -22,4 +22,7 @@
     <rect width="968" height="70" fill="url(#shares-{{ stream.id }})" mask="url(#brush-{{ stream.id }})"/>
   </svg>
 </figure>
+{% if editable and total < 100 and not active|rejectattr('pinned')|list %}
+<p class="notice" role="status">Чтобы распределить оставшиеся {{ 100 - total }}%, открепите долю или добавьте оффер.</p>
+{% endif %}
 {% endif %}
