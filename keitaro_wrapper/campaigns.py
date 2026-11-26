@@ -74,30 +74,18 @@ class Campaigns:
                 self._offer_catalog_expires = monotonic() + OFFER_CATALOG_TTL
             return self._offer_catalog
 
-    def inline_offer_choices(self) -> list[Reference] | None:
-        with self._offer_catalog_lock:
-            if (
-                monotonic() >= self._offer_catalog_expires
-                or len(self._offer_catalog) > OFFER_SEARCH_LIMIT
-            ):
-                return None
-            return [offer for offer in self._offer_catalog if offer.state != "deleted"]
-
-    def search_offers(self, query: str) -> list[Reference]:
+    def search_offers(self, query: str, excluded: frozenset[int] = frozenset()) -> list[Reference]:
         if not query:
             return []
-        if query.isascii() and query.isdecimal() and 0 < int(query) <= 2**31 - 1:
-            try:
-                return [self.offer(int(query))]
-            except AppError as error:
-                if error.status == 404:
-                    return []
-                raise
-        return [
-            offer
-            for offer in self.offer_catalog()
-            if offer.state != "deleted" and query.casefold() in offer.name.casefold()
-        ][:OFFER_SEARCH_LIMIT]
+        available = (
+            offer for offer in self.offer_catalog()
+            if offer.id not in excluded and offer.state != "deleted"
+        )
+        if query.isascii() and query.isdecimal():
+            matches = (offer for offer in available if str(offer.id).startswith(query))
+            return sorted(matches, key=lambda offer: offer.id)[:OFFER_SEARCH_LIMIT]
+        term = query.casefold()
+        return [offer for offer in available if term in offer.name.casefold()][:OFFER_SEARCH_LIMIT]
 
     def create(self, data: CreateCampaign) -> Campaign:
         self.offer(data.offer_id)

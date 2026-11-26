@@ -7,7 +7,7 @@
       <input id="campaign-name" name="name" placeholder="Весенняя кампания" maxlength="100" autocomplete="off" required>
       <div class="form-grid">
         <div><label for="country">Код страны</label><input id="country" name="country" placeholder="AU" maxlength="2" pattern="[A-Za-z]{2}" autocomplete="off" spellcheck="false" required></div>
-        <div><label for="initial-offer">Оффер</label>{{ offer_search('initial-offer', 'initial-options', 'Название или ID', offer_choices|default(none)) }}</div>
+        <div><label for="initial-offer">Оффер</label>{{ offer_search('initial-offer', 'initial-options', 'Название или ID') }}</div>
       </div>
     </section>
     <section class="form-section settings" aria-labelledby="tracker-fields">

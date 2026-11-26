@@ -99,6 +99,14 @@ class Editor:
         self.sessions = sessions
         self.lock = Lock()
 
+    def occupied_offers(self, stream_id: int) -> frozenset[int]:
+        with self.sessions() as db:
+            row = db.get(StreamState, stream_id)
+            if row is None:
+                raise AppError(404, "Сначала откройте кампанию по ID.")
+            current = row.draft if row.draft is not None else row.published
+            return frozenset(offer.offer_id for offer in read_rows(current))
+
     def sync(self, campaign_id: int) -> CampaignView:
         with self.lock:
             campaign = self.campaigns.owned(campaign_id)

@@ -116,8 +116,13 @@ def create_app(settings: Settings, transport: httpx.BaseTransport | None = None)
         return campaigns.lookups()
 
     @app.get("/api/offers")
-    def offers(q: Annotated[str, Query(min_length=1, max_length=100)]) -> list[Reference]:
-        return campaigns.search_offers(q.strip())
+    def offers(
+        q: Annotated[str, Query(min_length=1, max_length=100)], stream_id: PositiveId | None = None
+    ) -> list[Reference]:
+        excluded = editor.occupied_offers(stream_id) if stream_id is not None else frozenset()
+        matches = campaigns.search_offers(q.strip(), excluded)
+        interface.remember(matches)
+        return matches
 
     @app.post("/api/campaigns", status_code=201)
     def create_campaign(data: CreateCampaign) -> Campaign:

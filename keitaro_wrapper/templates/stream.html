@@ -26,7 +26,7 @@
     <div class="table-toolbar">
       <form class="add-offer" method="post" action="/ui/streams/{{ stream.id }}/edit" hx-post="/ui/streams/{{ stream.id }}/edit" hx-target="#stream-{{ stream.id }}" hx-swap="outerHTML" hx-disabled-elt="find button" hx-disinherit="hx-disabled-elt">
         <input type="hidden" name="revision" value="{{ stream.revision }}"><input type="hidden" name="action" value="add">
-        {{ offer_search('offer-' ~ stream.id, 'offers-' ~ stream.id, 'Поиск по названию или ID', offer_choices|default(none), 'Название или ID оффера') }}
+        {{ offer_search('offer-' ~ stream.id, 'offers-' ~ stream.id, 'Поиск по названию или ID', 'Название или ID оффера', stream.id) }}
         <button class="button" type="submit" disabled>Добавить</button>
       </form>
     </div>

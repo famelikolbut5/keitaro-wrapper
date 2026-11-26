@@ -12,27 +12,6 @@ window.addEventListener("scroll", () => {
   scrollbarTimer = setTimeout(() => { root.dataset.scrollbar = "idle"; }, 700);
 }, { passive: true });
 
-function updateOfferSearch(input) {
-  const hasQuery = input.value.trim() !== "";
-  if (hasQuery && !input.hasAttribute("list")) input.setAttribute("list", input.dataset.offerList);
-  if (!hasQuery) input.removeAttribute("list");
-
-  const add = input.closest(".add-offer")?.querySelector("button[type='submit']");
-  if (add && !input.form.classList.contains("htmx-request")) add.disabled = !hasQuery;
-}
-
-document.body.addEventListener("input", ({ target }) => {
-  if (!target.matches("input[data-offer-list]")) return;
-  updateOfferSearch(target);
-  if (target.id === "initial-offer" && target.validity.valid) {
-    createFeedback.querySelector("[data-offer-required]")?.remove();
-  }
-});
-
-window.addEventListener("pageshow", () => {
-  document.querySelectorAll("input[data-offer-list]").forEach(updateOfferSearch);
-});
-
 document.getElementById("initial-offer")?.addEventListener("invalid", (event) => {
   const input = event.currentTarget;
   if (input.value.trim() || input.form.querySelector(":invalid") !== input) return;
@@ -55,7 +34,6 @@ creation?.addEventListener("toggle", () => {
 
 document.body.addEventListener("htmx:beforeRequest", (event) => {
   const source = event.detail.elt;
-  if (source.matches("input[data-offer-list]") && !source.value.trim()) event.preventDefault();
   if (!source.matches("input[hx-get]")) requestFeedback(event.detail).replaceChildren();
 });
 
@@ -67,9 +45,6 @@ document.body.addEventListener("htmx:beforeSwap", (event) => {
 });
 
 document.body.addEventListener("htmx:afterRequest", ({ detail }) => {
-  if (detail.elt.matches(".add-offer")) {
-    updateOfferSearch(detail.elt.querySelector("input[data-offer-list]"));
-  }
   if (detail.pathInfo?.requestPath !== "/ui/lookups") return;
   lookupRetry.hidden = detail.xhr.status === 200;
   if (!lookupRetry.hidden) {

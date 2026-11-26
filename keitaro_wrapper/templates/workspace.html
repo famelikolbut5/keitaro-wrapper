@@ -1,5 +1,5 @@
 <header class="campaign-summary">
-  <h2 title="{{ view.campaign.name }}">{{ view.campaign.name.removeprefix(prefix) or view.campaign.name }}</h2>
+  <h2>{{ view.campaign.name }}</h2>
   {% set total = view.streams|length %}
   {% if total %}
   {% set last = total % 10 %}

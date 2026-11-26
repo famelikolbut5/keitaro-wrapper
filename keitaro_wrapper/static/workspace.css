@@ -384,3 +384,37 @@ html[data-theme='dark'] .ink-word.dark { display: block; }
 @media (pointer: coarse) {
   :root { --control-height: 44px; --action-height: 44px; }
 }
+
+offer-picker { position: relative; display: block; min-width: 0; }
+.add-offer offer-picker { flex: 1; }
+.offer-popup {
+  position: absolute;
+  z-index: 8;
+  inset: calc(100% + 6px) 0 auto;
+  padding: 4px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgb(0 0 0 / .12);
+}
+.offer-popup.opens-up { inset-block: auto calc(100% + 6px); }
+.offer-popup [role=option] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 42px;
+  padding: 7px 9px;
+  font-size: .85rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.offer-popup [role=option]:hover, .offer-popup [aria-selected=true] { background: var(--thumb-1); }
+.offer-popup small { color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.offer-status:not(:empty) { padding: 9px; font-size: .82rem; color: var(--muted); }
